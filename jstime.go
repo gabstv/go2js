@@ -14,3 +14,26 @@ func NewJsTime(t time.Time) JsTime {
 }
 
 type JsTime string
+
+func (d *JsTime) Scan(value interface{}) error {
+	if value == nil {
+		*d = ""
+		return nil
+	}
+	vv, ok := value.(string)
+	if ok {
+		tt, err := time.Parse("2006-01-02 15:04:05", vv)
+		if err != nil {
+			return err
+		}
+		*d = NewJsTime(tt)
+	} else {
+		vv2, _ := value.([]byte)
+		tt, err := time.Parse("2006-01-02 15:04:05", string(vv2))
+		if err != nil {
+			return err
+		}
+		*d = NewJsTime(tt)
+	}
+	return nil
+}
