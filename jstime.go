@@ -1,6 +1,7 @@
 package go2js
 
 import (
+	"database/sql/driver"
 	"time"
 )
 
@@ -36,4 +37,12 @@ func (d *JsTime) Scan(value interface{}) error {
 		*d = NewJsTime(tt)
 	}
 	return nil
+}
+
+func (j JsTime) Value() (driver.Value, error) {
+	if len(j) == 0 {
+		return nil, nil
+	}
+	tt, _ := time.Parse(RFC3339Milli, string(j))
+	return tt.Format("2006-01-02 15:04:05"), nil
 }
