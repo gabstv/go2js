@@ -2,6 +2,8 @@ package go2js
 
 import (
 	"database/sql/driver"
+	"fmt"
+	"reflect"
 	"time"
 )
 
@@ -21,22 +23,27 @@ func (d *JsTime) Scan(value interface{}) error {
 		*d = ""
 		return nil
 	}
-	vv, ok := value.(string)
-	if ok {
-		tt, err := time.Parse("2006-01-02 15:04:05", vv)
-		if err != nil {
-			return err
-		}
-		*d = NewJsTime(tt)
-	} else {
-		vv2, _ := value.([]byte)
-		tt, err := time.Parse("2006-01-02 15:04:05", string(vv2))
-		if err != nil {
-			return err
-		}
-		*d = NewJsTime(tt)
+	if val, ok := value.(time.Time); ok {
+		*d = NewJsTime(val)
+		return nil
 	}
-	return nil
+	if val, ok := value.(string); ok {
+		tt, err := time.Parse("2006-01-02 15:04:05", val)
+		if err != nil {
+			return err
+		}
+		*d = NewJsTime(tt)
+		return nil
+	}
+	if val, ok := value.([]byte); ok {
+		tt, err := time.Parse("2006-01-02 15:04:05", string(val))
+		if err != nil {
+			return err
+		}
+		*d = NewJsTime(tt)
+		return nil
+	}
+	return fmt.Errorf("invalid type %v", reflect.TypeOf(value).String())
 }
 
 func (j JsTime) Value() (driver.Value, error) {
